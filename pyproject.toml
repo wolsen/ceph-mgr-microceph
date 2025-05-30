@@ -1,0 +1,11 @@
+[project]
+name = "ceph-mgr-microceph"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "ceph",
+]
+
+[tool.uv.sources]
+ceph = { git = "https://github.com/ceph/ceph", subdirectory = "src/python-common", rev = "squid" }
