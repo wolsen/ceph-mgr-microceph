@@ -216,20 +216,23 @@ class MicroCephOrchestrator(Orchestrator,
         """
         logger.info(f"Applying RGW service with spec: {spec}")
         
-        # Extract parameters from spec
-        kwargs = {}
+        # Build parameters for the MicroCeph API call
+        api_params = {}
         
         # Set target host if placement is specified
         if spec.placement and spec.placement.hosts:
-            # Use the first host from the placement spec
-            kwargs['target'] = spec.placement.hosts[0].hostname
+            # MicroCeph enables a service on a single host, so use the first host
+            if len(spec.placement.hosts) > 1:
+                logger.warning(f"Multiple hosts specified in placement, using first host: "
+                             f"{spec.placement.hosts[0].hostname}")
+            api_params['target'] = spec.placement.hosts[0].hostname
         
         # Set port if specified in spec
         if hasattr(spec, 'rgw_frontend_port') and spec.rgw_frontend_port:
-            kwargs['port'] = spec.rgw_frontend_port
+            api_params['port'] = spec.rgw_frontend_port
         
         # Enable the RGW service via MicroCeph API
-        self.microceph.services.enable_service('rgw', **kwargs)
+        self.microceph.services.enable_service('rgw', **api_params)
         
         return OrchResult(f"RGW service {spec.service_id} enabled successfully")
 
@@ -243,15 +246,18 @@ class MicroCephOrchestrator(Orchestrator,
         """
         logger.info(f"Applying NFS service with spec: {spec}")
         
-        # Extract parameters from spec
-        kwargs = {}
+        # Build parameters for the MicroCeph API call
+        api_params = {}
         
         # Set target host if placement is specified
         if spec.placement and spec.placement.hosts:
-            # Use the first host from the placement spec
-            kwargs['target'] = spec.placement.hosts[0].hostname
+            # MicroCeph enables a service on a single host, so use the first host
+            if len(spec.placement.hosts) > 1:
+                logger.warning(f"Multiple hosts specified in placement, using first host: "
+                             f"{spec.placement.hosts[0].hostname}")
+            api_params['target'] = spec.placement.hosts[0].hostname
         
         # Enable the NFS service via MicroCeph API
-        self.microceph.services.enable_service('nfs', **kwargs)
+        self.microceph.services.enable_service('nfs', **api_params)
         
         return OrchResult(f"NFS service {spec.service_id} enabled successfully")
