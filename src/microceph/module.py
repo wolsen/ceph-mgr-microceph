@@ -206,18 +206,58 @@ class MicroCephOrchestrator(Orchestrator,
 
         return OrchResult(inventory)
 
+    @handle_orch_error
     def apply_rgw(self, spec: RGWSpec) -> OrchResult[str]:
         """
+        Apply RGW service specification by enabling RGW service in MicroCeph.
 
-        :param spec:
-        :return:
+        :param spec: RGW service specification
+        :return: Result indicating success
         """
-        raise NotImplementedError()
+        logger.info(f"Applying RGW service with spec: {spec}")
+        
+        # Build parameters for the MicroCeph API call
+        api_params = {}
+        
+        # Set target host if placement is specified
+        if spec.placement and spec.placement.hosts:
+            # MicroCeph enables a service on a single host, so use the first host
+            if len(spec.placement.hosts) > 1:
+                logger.warning(f"Multiple hosts specified in placement, using first host: "
+                             f"{spec.placement.hosts[0].hostname}")
+            api_params['target'] = spec.placement.hosts[0].hostname
+        
+        # Set port if specified in spec
+        if hasattr(spec, 'rgw_frontend_port') and spec.rgw_frontend_port:
+            api_params['port'] = spec.rgw_frontend_port
+        
+        # Enable the RGW service via MicroCeph API
+        self.microceph.services.enable_service('rgw', **api_params)
+        
+        return OrchResult(f"RGW service {spec.service_id} enabled successfully")
 
+    @handle_orch_error
     def apply_nfs(self, spec: NFSServiceSpec) -> OrchResult[str]:
         """
+        Apply NFS service specification by enabling NFS service in MicroCeph.
 
-        :param spec:
-        :return:
+        :param spec: NFS service specification
+        :return: Result indicating success
         """
-        raise NotImplementedError()
+        logger.info(f"Applying NFS service with spec: {spec}")
+        
+        # Build parameters for the MicroCeph API call
+        api_params = {}
+        
+        # Set target host if placement is specified
+        if spec.placement and spec.placement.hosts:
+            # MicroCeph enables a service on a single host, so use the first host
+            if len(spec.placement.hosts) > 1:
+                logger.warning(f"Multiple hosts specified in placement, using first host: "
+                             f"{spec.placement.hosts[0].hostname}")
+            api_params['target'] = spec.placement.hosts[0].hostname
+        
+        # Enable the NFS service via MicroCeph API
+        self.microceph.services.enable_service('nfs', **api_params)
+        
+        return OrchResult(f"NFS service {spec.service_id} enabled successfully")

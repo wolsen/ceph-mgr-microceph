@@ -131,3 +131,13 @@ class ExtendedAPIService(service.BaseService):
             }
             for member in members
         }
+
+    def enable_service(self, service_type: str, **kwargs) -> None:
+        """Enable a service in the cluster.
+
+        :param service_type: The type of service to enable (e.g., 'rgw', 'nfs')
+        :param kwargs: Additional parameters for the service (e.g., port, target, ssl options)
+        """
+        data = {"service": service_type}
+        data.update(kwargs)
+        self._post("/1.0/services", data=json.dumps(data))
